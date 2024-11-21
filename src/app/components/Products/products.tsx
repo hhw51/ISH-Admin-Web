@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { getStorage,uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import { CircularProgress } from "@mui/material";
-import { db } from "../../../lib/firebaseConfig";
-import ProductsTable, { Product } from "../components/Products/ProductsTable";
-import ProductModal from "../components/Products/ProductModal";
-import FilterBar from "../components/Products/filterBar";
+import { db } from "../../../../lib/firebaseConfig";
+import ProductsTable, { Product } from "./ProductsTable";
+import ProductModal from "./ProductModal";
+import FilterBar from "./filterBar";
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
