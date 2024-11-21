@@ -62,13 +62,14 @@ const UsersPage: React.FC = () => {
   
 
   const handleViewCart = (cart: CartItem[]) => {
-    setSelectedCart(cart);
-    setCartModalOpen(true);
+    if (cart.length === 0) {
+      alert("No items in the cart!"); // Handle empty cart
+      return;
+    }
+    setSelectedCart(cart); // Set the selected cart items
+    setCartModalOpen(true); // Open the cart modal
   };
-  const handleEdit = (user: User) => {
-    setCurrentUser(user);
-    setEditModalOpen(true);
-  };
+  
   
   
   const handleEditSubmit = async (updatedUser: User) => {
@@ -80,6 +81,10 @@ const UsersPage: React.FC = () => {
     } catch (error) {
       console.error("Error editing user:", error);
     }
+  };
+  const handleEdit = (user: User) => {
+    setCurrentUser(user); // Set the current user in the state
+    setEditModalOpen(true); // Open the edit modal
   };
   
 
@@ -119,8 +124,13 @@ const UsersPage: React.FC = () => {
           <CircularProgress />
         </div>
       ) : (
-        <UsersTable users={filteredUsers} onEdit={handleEdit} onDelete={handleDelete} />
-      )}
+        <UsersTable
+          users={filteredUsers}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onViewCart={handleViewCart} // Pass the cart view handler
+        />
+)}
       <CartModal
         open={cartModalOpen}
         onClose={() => setCartModalOpen(false)}

@@ -19,29 +19,15 @@ export interface User {
   email: string;
   full_name: string;
   phone: string;
-  points: number;
-  cart?: CartItem[]; // Add the cart property as optional
-}
-
-export interface CartItem {
-  category: string;
-  descriptions: string[];
-  imageUrl: string;
-  models: string[];
-  points: number;
-  prices: number[];
-  productid: string;
-  quantity: number;
+  status: string;
 }
 
 interface UsersTableProps {
   users: User[];
-  onEdit: (user: User) => void;
-  onDelete: (id: string) => void;
-  onViewCart: (cart: CartItem[]) => void; // New callback for viewing cart
+  onApprove: (user: User) => void;
 }
 
-const UsersTable: React.FC<UsersTableProps> = ({ users, onEdit, onDelete, onViewCart }) => {
+const UsersTable: React.FC<UsersTableProps> = ({ users, onApprove }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -66,7 +52,6 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, onEdit, onDelete, onView
             <TableCell>Phone</TableCell>
             <TableCell>Address</TableCell>
             <TableCell>CNIC</TableCell>
-            <TableCell>Points</TableCell>
             <TableCell>Account Type</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
@@ -79,22 +64,15 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, onEdit, onDelete, onView
               <TableCell>{user.phone}</TableCell>
               <TableCell>{user.address}</TableCell>
               <TableCell>{user.cnic}</TableCell>
-              <TableCell>{user.points}</TableCell>
               <TableCell>{user.account_type}</TableCell>
               <TableCell>
                 <Button
-                  onClick={() => onViewCart(user.cart || [])} // Call the onViewCart callback
+                  onClick={() => onApprove(user)}
                   color="primary"
+                  variant="contained"
+                  disabled={user.status === "y"} // Disable button if already approved
                 >
-                  View Cart
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Button onClick={() => onEdit(user)} color="primary">
-                  Edit
-                </Button>
-                <Button onClick={() => onDelete(user.id)} color="secondary">
-                  Delete
+                  {user.status === "n" ? "Unapproved" : "Approved"}
                 </Button>
               </TableCell>
             </TableRow>

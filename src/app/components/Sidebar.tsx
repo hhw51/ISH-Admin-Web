@@ -68,13 +68,23 @@ const Sidebar: React.FC = () => {
                 </ListItem>
                 <ListItem
                     component={Link}
-                    href="/users"
+                    href="/approval"
                     sx={{
-                        color: pathname === "/users" ? "lightblue" : "white",
+                        color: pathname === "/approval" ? "lightblue" : "white",
                         marginBottom: 1,
                     }}
                 >
                     <ListItemText primary="Pending for Approval" />
+                </ListItem>
+                <ListItem
+                    component={Link}
+                    href="/approval"
+                    sx={{
+                        color: pathname === "/approval" ? "lightblue" : "white",
+                        marginBottom: 1,
+                    }}
+                >
+                    <ListItemText primary="Orders" />
                 </ListItem>
             </List>
         </Box>
