@@ -1,7 +1,6 @@
-import { auth } from "./firebaseConfig";
+import { auth,db } from "../src/utils/firebaseClient";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firebaseConfig";
 // Login function
 export const login = async (email: string, password: string) => {
     try {

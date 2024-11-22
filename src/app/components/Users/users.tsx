@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { collection,setDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { CircularProgress } from "@mui/material";
-import { db } from "../../../../lib/firebaseConfig";
-import UsersTable, { User,CartItem } from "../Users/userTable";
-import CartModal from "../Users/CartModal"
-import UserModal from "../Users/userModal"
-import FilterBar from "../Users/filterBar"
+import { db } from "../../../utils/firebaseClient";
+import UsersTable, { User,CartItem } from "./userTable";
+import CartModal from "./CartModal"
+import UserModal from "./userModal"
+import FilterBar from "./filterBar"
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -17,7 +17,6 @@ const UsersPage: React.FC = () => {
   const [editModalOpen, setEditModalOpen] = useState(false); // State to track if the edit modal is open or closed
   const [search, setSearch] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]); // Filtered list of users
 
   const fetchUsers = async () => {
@@ -48,17 +47,37 @@ const UsersPage: React.FC = () => {
 
   
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, email: string) => {
+    console.log("🥩💕", id);
+    console.log("🔮🐂", email);
+  
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (!confirmDelete) return;
   
     try {
-      await deleteDoc(doc(db, "users", id)); // Remove user from Firestore
-      fetchUsers(); // Refresh users list
+      // Delete user from Firestore
+      await deleteDoc(doc(db, "users", id));
+  
+      // Call the API route to delete the Firebase Auth user
+      const response = await fetch("/api/deleteUser", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete user from Firebase Authentication");
+      }
+  
+      fetchUsers(); // Refresh the users list
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
+  
+  
   
 
   const handleViewCart = (cart: CartItem[]) => {

@@ -7,6 +7,11 @@ import {
   DialogActions,
   TextField,
   Button,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 
@@ -33,7 +38,6 @@ export interface CartItem {
   quantity: number;
 }
 
-
 export interface UserModalProps {
   open: boolean;
   onClose: () => void;
@@ -42,7 +46,7 @@ export interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ open, onClose, onSubmit, user }) => {
-  const { register, handleSubmit, reset } = useForm<User>({
+  const { register, handleSubmit, reset, setValue, watch } = useForm<User>({
     defaultValues: user || {
       account_type: "",
       address: "",
@@ -53,6 +57,8 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, onSubmit, user }) 
       points: 0,
     },
   });
+
+  const accountType = watch("account_type");
 
   useEffect(() => {
     if (user) {
@@ -75,6 +81,9 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, onSubmit, user }) 
     onClose();
   };
 
+  const handleAccountTypeChange = (event: SelectChangeEvent<string>) => {
+    setValue("account_type", event.target.value);
+  };
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{user ? "Edit User" : "Add User"}</DialogTitle>
@@ -110,19 +119,19 @@ const UserModal: React.FC<UserModalProps> = ({ open, onClose, onSubmit, user }) 
             margin="normal"
             {...register("cnic", { required: "CNIC is required" })}
           />
-          <TextField
-            fullWidth
-            label="Points"
-            margin="normal"
-            type="number"
-            {...register("points", { required: "Points are required" })}
-          />
-          <TextField
-            fullWidth
-            label="Account Type"
-            margin="normal"
-            {...register("account_type", { required: "Account Type is required" })}
-          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="account-type-label">Account Type</InputLabel>
+            <Select
+              labelId="account-type-label"
+              value={accountType}
+              onChange={handleAccountTypeChange}
+            >
+              <MenuItem value="Super Dealer">Super Dealer</MenuItem>
+              <MenuItem value="Mechanics">Mechanics</MenuItem>
+              <MenuItem value="Dealer">Dealer</MenuItem>
+              <MenuItem value="Retailer">Retailer</MenuItem>
+            </Select>
+          </FormControl>
         </form>
       </DialogContent>
       <DialogActions>

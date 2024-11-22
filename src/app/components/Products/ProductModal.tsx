@@ -47,8 +47,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
     },
   });
 
-  const [file, setFile] = React.useState<File | null>(null);
-
+  const [file, setFile] = React.useState<File | null>(null); 
   useEffect(() => {
     reset(product || {});
   }, [product, reset]);

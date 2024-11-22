@@ -37,9 +37,10 @@ export interface CartItem {
 interface UsersTableProps {
   users: User[];
   onEdit: (user: User) => void;
-  onDelete: (id: string) => void;
-  onViewCart: (cart: CartItem[]) => void; // New callback for viewing cart
+  onDelete: (id: string, email: string) => void; // Update this line
+  onViewCart: (cart: CartItem[]) => void;
 }
+
 
 const UsersTable: React.FC<UsersTableProps> = ({ users, onEdit, onDelete, onViewCart }) => {
   const [page, setPage] = useState(0);
@@ -72,34 +73,39 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, onEdit, onDelete, onView
           </TableRow>
         </TableHead>
         <TableBody>
-          {paginatedUsers.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.full_name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>{user.phone}</TableCell>
-              <TableCell>{user.address}</TableCell>
-              <TableCell>{user.cnic}</TableCell>
-              <TableCell>{user.points}</TableCell>
-              <TableCell>{user.account_type}</TableCell>
-              <TableCell>
-                <Button
-                  onClick={() => onViewCart(user.cart || [])} // Call the onViewCart callback
-                  color="primary"
-                >
-                  View Cart
-                </Button>
-              </TableCell>
-              <TableCell>
-                <Button onClick={() => onEdit(user)} color="primary">
-                  Edit
-                </Button>
-                <Button onClick={() => onDelete(user.id)} color="secondary">
-                  Delete
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
+  {paginatedUsers.map((user) => (
+    <TableRow key={user.id}>
+      <TableCell>{user.full_name}</TableCell>
+      <TableCell>{user.email}</TableCell>
+      <TableCell>{user.phone}</TableCell>
+      <TableCell>{user.address}</TableCell>
+      <TableCell>{user.cnic}</TableCell>
+      <TableCell>{user.points}</TableCell>
+      <TableCell>{user.account_type}</TableCell>
+      <TableCell>
+        <Button
+          onClick={() => onViewCart(user.cart || [])}
+          color="primary"
+        >
+          View Cart
+        </Button>
+      </TableCell>
+      <TableCell>
+        <Button onClick={() => onEdit(user)} color="primary">
+          Edit
+        </Button>
+        <Button
+          onClick={() => onDelete(user.id, user.email)} // Pass both id and email
+          color="secondary"
+        >
+          Delete
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
+
       </Table>
       <TablePagination
         component="div"

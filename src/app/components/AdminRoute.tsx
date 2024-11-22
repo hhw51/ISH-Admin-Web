@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { auth } from ".././../../lib/firebaseConfig"; // Ensure this points to your firebase config
+import { auth } from ".././../utils/firebaseClient"; // Ensure this points to your firebase config
 import { getUserRole } from ".././../../lib/auth";    // Utility function to fetch the user's role
 import { useRouter } from "next/router";
 

@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
 import { CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
-import { db } from "../../../../lib/firebaseConfig";
-import UsersTable, { User } from "../approval/userTable"; // Updated UsersTable without cart
+import { db } from "../../../utils/firebaseClient";
+import UsersTable, { User } from "./userTable"; // Updated UsersTable without cart
 import FilterBar from "../Users/filterBar";
 
 const ApprovalPage: React.FC = () => {
