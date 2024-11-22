@@ -1,5 +1,6 @@
 "use client";
-
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import React, { useEffect, useState } from "react";
 import { collection,setDoc, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { CircularProgress } from "@mui/material";
@@ -8,6 +9,8 @@ import UsersTable, { User,CartItem } from "./userTable";
 import CartModal from "./CartModal"
 import UserModal from "./userModal"
 import FilterBar from "./filterBar"
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
+
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -44,15 +47,25 @@ const UsersPage: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteUserDetails, setDeleteUserDetails] = useState<{ id: string; email: string } | null>(null);
+  
+  const openDeleteDialog = (id: string, email: string) => {
+    setDeleteUserDetails({ id, email });
+    setDeleteDialogOpen(true);
+  };
+  
+  // Function to close the delete dialog
+  const closeDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDeleteUserDetails(null);
+  };
   
 
-  const handleDelete = async (id: string, email: string) => {
-    console.log("🥩💕", id);
-    console.log("🔮🐂", email);
+  const confirmDelete = async () => {
+    if (!deleteUserDetails) return;
   
-    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
-    if (!confirmDelete) return;
+    const { id, email } = deleteUserDetails;
   
     try {
       // Delete user from Firestore
@@ -71,9 +84,13 @@ const UsersPage: React.FC = () => {
         throw new Error("Failed to delete user from Firebase Authentication");
       }
   
+      toast.success("User deleted successfully!"); // Show success toast
       fetchUsers(); // Refresh the users list
     } catch (error) {
       console.error("Error deleting user:", error);
+      toast.error("Failed to delete the user. Please try again."); // Show error toast
+    } finally {
+      closeDeleteDialog();
     }
   };
   
@@ -82,7 +99,15 @@ const UsersPage: React.FC = () => {
 
   const handleViewCart = (cart: CartItem[]) => {
     if (cart.length === 0) {
-      alert("No items in the cart!"); // Handle empty cart
+      toast.warning("No items in the cart!", {
+        position: "top-right",
+        autoClose: 3000, // Time in milliseconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
       return;
     }
     setSelectedCart(cart); // Set the selected cart items
@@ -127,6 +152,7 @@ const UsersPage: React.FC = () => {
     }
   }, [search, users]);
   
+
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
       <h1>Users</h1>
@@ -145,26 +171,58 @@ const UsersPage: React.FC = () => {
       ) : (
         <UsersTable
           users={filteredUsers}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onViewCart={handleViewCart} // Pass the cart view handler
+          onEdit={(user) => setCurrentUser(user)}
+          onDelete={(id, email) => openDeleteDialog(id, email)}
+          onViewCart={(cart) => {
+            setSelectedCart(cart);
+            setCartModalOpen(true);
+          }}
         />
-)}
+      )}
+
+      {/* Cart Modal */}
       <CartModal
         open={cartModalOpen}
         onClose={() => setCartModalOpen(false)}
         cart={selectedCart}
       />
+
+      {/* User Modal */}
       <UserModal
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        onSubmit={handleEditSubmit}
-        user={currentUser || null} // Safely pass null if no user is set
+        onSubmit={(user) => {
+          console.log("User submitted:", user);
+          setEditModalOpen(false);
+        }}
+        user={currentUser || null}
       />
 
-
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={closeDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete User</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this user: {deleteUserDetails?.email}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
 
 export default UsersPage;
+

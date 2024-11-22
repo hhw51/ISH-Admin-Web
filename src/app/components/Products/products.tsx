@@ -1,7 +1,16 @@
 "use client"
-
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  TextField,
+  Button,
+} from "@mui/material";
+import { toast } from "react-toastify";
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, doc, setDoc, QueryDocumentSnapshot } from "firebase/firestore";
 import { getStorage,uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import { CircularProgress } from "@mui/material";
 import { db } from "../../../utils/firebaseClient";
@@ -16,7 +25,18 @@ const ProductsPage: React.FC = () => {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState<string>("");
   const [category, setCategory] = useState<string>("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteModelDetails, setDeleteModelDetails] = useState<{ docId: string; modelToDelete: string } | null>(null);
+  
+  const openDeleteDialog = (docId: string, modelToDelete: string) => {
+    setDeleteModelDetails({ docId, modelToDelete });
+    setDeleteDialogOpen(true);
+  };
 
+const closeDeleteDialog = () => {
+  setDeleteDialogOpen(false);
+  setDeleteModelDetails(null);
+};
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -59,9 +79,10 @@ const ProductsPage: React.FC = () => {
     fetchProducts();
   }, []);
   
-  const handleDelete = async (docId: string, modelToDelete: string) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete model: ${modelToDelete}?`);
-    if (!confirmDelete) return;
+  const confirmDelete = async () => {
+    if (!deleteModelDetails) return;
+  
+    const { docId, modelToDelete } = deleteModelDetails;
   
     try {
       const productRef = doc(db, "productss", docId);
@@ -74,7 +95,7 @@ const ProductsPage: React.FC = () => {
         const modelIndex = productData.models.indexOf(modelToDelete);
   
         if (modelIndex === -1) {
-          console.error("Model not found in the document");
+          toast.error("Model not found in the document!");
           return;
         }
   
@@ -91,16 +112,21 @@ const ProductsPage: React.FC = () => {
         // Update the Firestore document
         await setDoc(productRef, updatedData, { merge: true });
   
+        // Show success toast
+        toast.success(`Model "${modelToDelete}" deleted successfully!`);
+  
         // Refresh the list
         fetchProducts();
       } else {
-        console.error("Document not found");
+        toast.error("Document not found!");
       }
     } catch (error) {
       console.error("Error deleting model:", error);
+      toast.error("An error occurred while deleting the model. Please try again.");
+    } finally {
+      closeDeleteDialog(); // Close dialog after operation
     }
-  };
-  
+  }
   
   
   const handleAddProduct = async (product: Product, file: File | null) => {
@@ -159,10 +185,7 @@ const ProductsPage: React.FC = () => {
       console.error("Error adding product:", error);
     }
   };
-  const handleEdit = (product: Product) => {
-    setCurrentProduct(product);
-    setModalOpen(true); // Open the modal with current values
-  };
+
   
 
   
@@ -186,30 +209,51 @@ const ProductsPage: React.FC = () => {
         setCategory={setCategory}
       />
       <button onClick={() => setModalOpen(true)}>Add Product</button>
-
+  
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
           <CircularProgress />
         </div>
       ) : (
-<ProductsTable
-  products={filteredProducts}
-  onEdit={(product) => setCurrentProduct(product)}
-  onDelete={(docId, modelToDelete) => handleDelete(docId, modelToDelete)} // Match the expected arguments
-/>
-
-
-
+        <ProductsTable
+          products={filteredProducts}
+          onEdit={(product) => setCurrentProduct(product)}
+          onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Open the delete dialog
+        />
       )}
-
-    <ProductModal
+  
+      <ProductModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={(data, file) => handleAddProduct(data, file)} // Reuse handleAddProduct for saving
         product={currentProduct} // Pass the current product
       />
+  
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={closeDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Model</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete model: {deleteModelDetails?.modelToDelete}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
+  
 };
 
 export default ProductsPage;
