@@ -14,7 +14,7 @@ import {
   MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc } from "firebase/firestore";
 import { db } from "../../../utils/firebaseClient";
 
 interface Order {
@@ -36,26 +36,26 @@ const OrdersPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(collection(db, "history"));
-        const fetchedOrders: Order[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Order[];
-        setOrders(fetchedOrders);
+        const response = await fetch("/api/fetchOrders");
+        if (!response.ok) {
+          throw new Error("Failed to fetch orders");
+        }
+        const data: Order[] = await response.json();
+        setOrders(data);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchOrders();
   }, []);
+  
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
