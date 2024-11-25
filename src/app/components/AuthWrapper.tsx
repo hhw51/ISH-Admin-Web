@@ -1,27 +1,38 @@
+// AuthWrapper.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { auth } from "../../utils/firebaseClient";
 
 const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        setIsAuthenticated(true); // User is logged in
+        setIsAuthenticated(true);
+
+        // Redirect logged-in users away from the login page
+        if (pathname === "/login") {
+          router.push("/");
+        }
       } else {
-        setIsAuthenticated(false); // User is not logged in
-        router.push("/login"); // Redirect to login page
+        setIsAuthenticated(false);
+
+        // Redirect unauthenticated users to the login page
+        if (pathname !== "/login") {
+          router.push("/login");
+        }
       }
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, pathname]);
 
-  // Show a loading state while checking authentication
+  // Show a loading spinner while the authentication state is being determined
   if (isAuthenticated === null) {
     return (
       <div
@@ -37,8 +48,18 @@ const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     );
   }
 
-  // If authenticated, render the children
-  return <>{children}</>;
+  // Allow login page to render even if the user is not authenticated
+  if (pathname === "/login") {
+    return <>{children}</>;
+  }
+
+  // For authenticated users, render the children (e.g., dashboard pages)
+  if (isAuthenticated) {
+    return <>{children}</>;
+  }
+
+  // Render nothing while redirecting unauthenticated users
+  return null;
 };
 
 export default AuthWrapper;

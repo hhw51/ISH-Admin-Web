@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect } from "react";
 import {
   Dialog,
@@ -35,7 +34,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   product, // Passed as null for add mode
 }) => {
   const { register, handleSubmit, reset } = useForm<Product>({
-    defaultValues: product || {
+    defaultValues: {
       category: "", // Default for add mode
       description: [""],
       models: [""],
@@ -50,20 +49,51 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [file, setFile] = React.useState<File | null>(null);
 
   useEffect(() => {
-    reset(product || {
-      category: "", // Reset to defaults when adding
-      description: [""],
-      models: [""],
-      points: [0],
-      price: [0],
-      productid: [0],
-      quantity: [0],
-      imageUrl: "",
-    });
+    if (product) {
+      reset({
+        ...product,
+        description: Array.isArray(product.description)
+          ? [product.description.join(", ")] // Join array for display
+          : [product.description || ""], // Handle non-array or undefined
+        models: Array.isArray(product.models)
+          ? [product.models.join(", ")]
+          : [product.models || ""],
+        points: Array.isArray(product.points)
+          ? product.points
+          : [parseInt(product.points as unknown as string) || 0], // Handle non-array or undefined
+        price: Array.isArray(product.price)
+          ? product.price
+          : [parseFloat(product.price as unknown as string) || 0],
+        quantity: Array.isArray(product.quantity)
+          ? product.quantity
+          : [parseInt(product.quantity as unknown as string) || 0],
+      });
+    } else {
+      reset({
+        category: "",
+        description: [""],
+        models: [""],
+        points: [0],
+        price: [0],
+        productid: [0],
+        quantity: [0],
+        imageUrl: "",
+      });
+    }
   }, [product, reset]);
+  
 
   const handleFormSubmit = (data: Product) => {
-    onSubmit(data, file);
+    // Split strings back into arrays
+    const updatedData = {
+      ...data,
+      description: data.description[0].split(",").map((item) => item.trim()),
+      models: data.models[0].split(",").map((item) => item.trim()),
+      points: data.points.map(Number), // Convert points back to numbers
+      price: data.price.map(Number), // Convert price back to numbers
+      quantity: data.quantity.map(Number), // Convert quantity back to numbers
+    };
+    onSubmit(updatedData, file);
     onClose();
   };
 

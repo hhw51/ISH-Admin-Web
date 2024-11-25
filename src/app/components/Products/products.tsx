@@ -17,7 +17,7 @@ import { collection, getDocs, getDoc, addDoc,
    doc, 
   setDoc } from "firebase/firestore";
 import { getStorage,uploadBytes, ref, getDownloadURL } from "firebase/storage";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress,Typography } from "@mui/material";
 import { db,auth  } from "../../../utils/firebaseClient";
 import ProductsTable, { Product } from "./ProductsTable";
 import ProductModal from "./ProductModal";
@@ -224,8 +224,9 @@ const closeDeleteDialog = () => {
 
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
-      <h1>Products</h1>
-      <FilterBar
+    <Typography variant="h5" sx={{ color: 'black' }}>
+    Products
+  </Typography>      <FilterBar
         search={search}
         setSearch={setSearch}
         category={category}
@@ -246,23 +247,19 @@ const closeDeleteDialog = () => {
       product={currentProduct} // Pass the product being edited (or null for adding)
     ></ProductModal>
 
-      {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
-          <CircularProgress />
-        </div>
-      ) : (
-        <ProductsTable
-        products={products}
-        onEdit={handleEditClick} // Pass the handleEditClick function
-        onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Unchanged
-      />
-              )}
-          
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <CircularProgress />
+          </div>
+        ) : (
           <ProductsTable
-          products={products}
-          onEdit={handleEditClick} // Pass the handleEditClick function
-          onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Unchanged
-        />
+            products={filteredProducts}  
+            onEdit={handleEditClick}
+            onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)}
+          />
+        )}
+          
+
 
   
       {/* Delete Confirmation Dialog */}

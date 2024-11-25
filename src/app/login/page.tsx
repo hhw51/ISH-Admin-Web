@@ -38,6 +38,12 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      handleLogin();
+    }
+  };
+
   return (
     <Box
       display="flex"
@@ -47,7 +53,7 @@ const LoginPage: React.FC = () => {
       height="100vh"
       bgcolor="white"
     >
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom style={{ color: "black" }}>
         Admin Login
       </Typography>
       <Box width="300px" mb={2}>
@@ -58,6 +64,7 @@ const LoginPage: React.FC = () => {
           margin="normal"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={handleKeyPress} // Listen for Enter key
         />
         <TextField
           fullWidth
@@ -67,6 +74,7 @@ const LoginPage: React.FC = () => {
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyPress} // Listen for Enter key
         />
       </Box>
       {error && <Typography color="error">{error}</Typography>}

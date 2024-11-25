@@ -1,24 +1,31 @@
-"use client"
+"use client";
+
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-  TextField,
+  // TextField,
   Button,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import React, { useEffect, useState } from "react";
-import { collection, getDocs, getDoc, addDoc, doc, setDoc, QueryDocumentSnapshot } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc,
+  // QueryDocumentSnapshot,
+   doc, 
+  setDoc } from "firebase/firestore";
 import { getStorage,uploadBytes, ref, getDownloadURL } from "firebase/storage";
-import { CircularProgress } from "@mui/material";
-import { db } from "../../../utils/firebaseClient";
+import { CircularProgress,Typography } from "@mui/material";
+import { db,auth  } from "../../../utils/firebaseClient";
 import ProductsTable, { Product } from "./ProductsTable";
 import ProductModal from "./ProductModal";
 import FilterBar from "./filterBar";
 
 const ProductsPage: React.FC = () => {
+  const router = useRouter();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -74,11 +81,28 @@ const closeDeleteDialog = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        router.push("/login"); // Redirect to login if not authenticated
+      }
+    });
 
+    return () => unsubscribe();
+  }, [router]);
   useEffect(() => {
     fetchProducts();
   }, []);
-  
+  const handleAddClick = () => {
+    setCurrentProduct(null); // Clear product for add mode
+    setModalOpen(true);
+  };
+
+  // Open the modal for editing a product
+  const handleEditClick = (product: Product) => {
+    setCurrentProduct(product); // Set product for edit mode
+    setModalOpen(true);
+  };
   const confirmDelete = async () => {
     if (!deleteModelDetails) return;
   
@@ -127,6 +151,10 @@ const closeDeleteDialog = () => {
       closeDeleteDialog(); // Close dialog after operation
     }
   }
+  const handleEdit = (product: Product) => {
+    setCurrentProduct(product); // Set the current product to edit
+    setModalOpen(true); // Open the modal
+  };
   
   
   const handleAddProduct = async (product: Product, file: File | null) => {
@@ -140,51 +168,46 @@ const closeDeleteDialog = () => {
         imageUrl = await getDownloadURL(storageRef);
       }
   
+      // Fetch the document with the highest `productid`
       const productRef = collection(db, "popular_products");
       const querySnapshot = await getDocs(productRef);
-  
-      let existingDoc: QueryDocumentSnapshot | null = null;
+      let maxProductId = 0;
   
       querySnapshot.forEach((doc) => {
         const data = doc.data() as Product;
-        if (data.category === product.category) {
-          existingDoc = doc;
+        const currentProductId = Math.max(...(data.productid || [0])); // Safely handle missing `productid`
+        if (currentProductId > maxProductId) {
+          maxProductId = currentProductId;
         }
       });
   
-      if (existingDoc) {
-        // If the document exists, update it by concatenating arrays
-        const existingData = existingDoc.data() as Product;
+      const newProductId = maxProductId + 1; // Auto-incremented ID
   
-        await setDoc(existingDoc.ref, {
-          ...existingData,
-          models: [...existingData.models, ...(product.models || [])],
-          description: [...existingData.description, ...(product.description || [])],
-          points: [...existingData.points, ...(product.points || [])],
-          price: [...existingData.price, ...(product.price || [])],
-          productid: [...existingData.productid, ...(product.productid || [])],
-          quantity: [...existingData.quantity, ...(product.quantity || [])],
-          imageUrl: imageUrl || existingData.imageUrl, // Keep existing image if no new image is uploaded
-        });
-      } else {
-        // If the document doesn't exist, create a new one with arrays
-        await addDoc(productRef, {
-          category: product.category,
-          description: product.description || [],
-          models: product.models || [],
-          points: product.points || [],
-          price: product.price || [],
-          productid: product.productid || [],
-          quantity: product.quantity || [],
-          imageUrl,
-        });
-      }
+      // Create a new product object with the new productid
+      const newProduct = {
+        category: product.category,
+        description: product.description || [],
+        models: product.models || [],
+        points: product.points || [],
+        price: product.price || [],
+        productid: [newProductId], // Set the auto-incremented ID
+        quantity: product.quantity || [],
+        imageUrl,
+      };
   
-      fetchProducts(); // Refresh the list
+      // Add new product to Firestore
+      await addDoc(productRef, newProduct);
+  
+      // Refresh product list
+      fetchProducts();
+  
+      toast.success("Product added successfully!");
     } catch (error) {
       console.error("Error adding product:", error);
+      toast.error("Failed to add product. Please try again.");
     }
   };
+  
 
   
 
@@ -201,33 +224,43 @@ const closeDeleteDialog = () => {
 
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
-      <h1>Products</h1>
-      <FilterBar
+    <Typography variant="h5" sx={{ color: 'black' }}>
+    Popular Products
+  </Typography>      <FilterBar
         search={search}
         setSearch={setSearch}
         category={category}
         setCategory={setCategory}
       />
-      <button onClick={() => setModalOpen(true)}>Add Product</button>
-  
-      {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
-          <CircularProgress />
-        </div>
-      ) : (
-        <ProductsTable
-          products={filteredProducts}
-          onEdit={(product) => setCurrentProduct(product)}
-          onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Open the delete dialog
-        />
-      )}
-  
-      <ProductModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={(data, file) => handleAddProduct(data, file)} // Reuse handleAddProduct for saving
-        product={currentProduct} // Pass the current product
-      />
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={handleAddClick}
+      style={{ marginBottom: "1rem" }}
+    >
+      Add Product
+    </Button>
+        <ProductModal
+      open={modalOpen} // Control the modal visibility
+      onClose={() => setModalOpen(false)} // Close the modal
+      onSubmit={handleAddProduct} // Submit the data
+      product={currentProduct} // Pass the product being edited (or null for adding)
+    ></ProductModal>
+
+        {loading ? (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <CircularProgress />
+          </div>
+        ) : (
+          <ProductsTable
+            products={filteredProducts}  
+            onEdit={handleEditClick}
+            onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)}
+          />
+        )}
+          
+
+
   
       {/* Delete Confirmation Dialog */}
       <Dialog

@@ -1,8 +1,11 @@
+// layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "../app/components/Sidebar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AuthProvider } from "../app/components/AuthContext"; // Use only AuthProvider here
+import LayoutContent from "../app/components/layoutContent"; // Import the client component
 
 export const metadata: Metadata = {
   title: "Admin Panel",
@@ -17,31 +20,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div style={{ display: "flex", minHeight: "100vh" }}>
-          <Sidebar />
-          <div
-            style={{
-              flex: 1,
-              padding: "20px",
-              backgroundColor: "#f5f5f5",
-              overflowY: "auto",
-            }}
-          >
-            {children}
-          </div>
-        </div>
-
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
+        <AuthProvider>
+          <LayoutContent>{children}</LayoutContent>
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </AuthProvider>
       </body>
     </html>
   );
