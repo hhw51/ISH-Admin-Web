@@ -1,12 +1,37 @@
 "use client";
 
-import React from "react";
-import { Box, List, ListItem, ListItemText, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, List, ListItem, ListItemText, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { auth } from "../../utils/firebaseClient"; // Adjust the path
 
 const Sidebar: React.FC = () => {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+    const handleLogout = async () => {
+        try {
+          await auth.signOut();
+          document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"; // Clear cookie
+          router.push("/login"); // Redirect to login
+        } catch (error) {
+          console.error("Error during logout:", error);
+        }
+      };
+      
+    
+    
+
+    const handleOpenLogoutDialog = () => {
+        setLogoutDialogOpen(true); // Open the logout confirmation dialog
+    };
+
+    const handleCloseLogoutDialog = () => {
+        setLogoutDialogOpen(false); // Close the dialog without logging out
+    };
 
     return (
         <Box
@@ -16,7 +41,7 @@ const Sidebar: React.FC = () => {
                 color: "white",
                 height: "100vh",
                 position: "sticky",
-                top: 0, // Ensures it stays at the top when scrolling
+                top: 0,
                 padding: 2,
                 display: "flex",
                 flexDirection: "column",
@@ -86,7 +111,44 @@ const Sidebar: React.FC = () => {
                 >
                     <ListItemText primary="Orders" />
                 </ListItem>
+                <ListItem
+                    component="button" // Render as a button
+                    onClick={handleOpenLogoutDialog} // Open the logout confirmation dialog
+                    sx={{
+                        color: "white",
+                        marginBottom: 1,
+                        textAlign: "left",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                    }}
+                >
+                    <ListItemText primary="Logout" />
+                </ListItem>
             </List>
+
+            {/* Logout Confirmation Dialog */}
+            <Dialog
+                open={logoutDialogOpen}
+                onClose={handleCloseLogoutDialog}
+                aria-labelledby="logout-dialog-title"
+                aria-describedby="logout-dialog-description"
+            >
+                <DialogTitle id="logout-dialog-title">Logout Confirmation</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="logout-dialog-description">
+                        Are you sure you want to logout?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseLogoutDialog} color="secondary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleLogout} color="primary">
+                        Logout
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

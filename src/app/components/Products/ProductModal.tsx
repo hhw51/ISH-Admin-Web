@@ -106,13 +106,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
           />
           <TextField
             fullWidth
-            label="Product ID"
-            margin="normal"
-            type="number"
-            {...register("productid.0", { required: "Product ID is required" })}
-          />
-          <TextField
-            fullWidth
             label="Quantity"
             margin="normal"
             type="number"
