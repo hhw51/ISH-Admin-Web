@@ -32,11 +32,11 @@ const ProductModal: React.FC<ProductModalProps> = ({
   open,
   onClose,
   onSubmit,
-  product,
+  product, // Passed as null for add mode
 }) => {
   const { register, handleSubmit, reset } = useForm<Product>({
     defaultValues: product || {
-      category: "",
+      category: "", // Default for add mode
       description: [""],
       models: [""],
       points: [0],
@@ -47,9 +47,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
     },
   });
 
-  const [file, setFile] = React.useState<File | null>(null); 
+  const [file, setFile] = React.useState<File | null>(null);
+
   useEffect(() => {
-    reset(product || {});
+    reset(product || {
+      category: "", // Reset to defaults when adding
+      description: [""],
+      models: [""],
+      points: [0],
+      price: [0],
+      productid: [0],
+      quantity: [0],
+      imageUrl: "",
+    });
   }, [product, reset]);
 
   const handleFormSubmit = (data: Product) => {

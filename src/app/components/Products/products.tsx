@@ -78,7 +78,16 @@ const closeDeleteDialog = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
-  
+  const handleAddClick = () => {
+    setCurrentProduct(null); // Clear product for add mode
+    setModalOpen(true);
+  };
+
+  // Open the modal for editing a product
+  const handleEditClick = (product: Product) => {
+    setCurrentProduct(product); // Set product for edit mode
+    setModalOpen(true);
+  };
   const confirmDelete = async () => {
     if (!deleteModelDetails) return;
   
@@ -127,6 +136,10 @@ const closeDeleteDialog = () => {
       closeDeleteDialog(); // Close dialog after operation
     }
   }
+  const handleEdit = (product: Product) => {
+    setCurrentProduct(product); // Set the current product to edit
+    setModalOpen(true); // Open the modal
+  };
   
   
   const handleAddProduct = async (product: Product, file: File | null) => {
@@ -141,6 +154,8 @@ const closeDeleteDialog = () => {
       }
   
       const productRef = collection(db, "productss");
+  
+      // Check if a document with the same category exists
       const querySnapshot = await getDocs(productRef);
   
       let existingDoc: QueryDocumentSnapshot | null = null;
@@ -167,7 +182,7 @@ const closeDeleteDialog = () => {
           imageUrl: imageUrl || existingData.imageUrl, // Keep existing image if no new image is uploaded
         });
       } else {
-        // If the document doesn't exist, create a new one with arrays
+        // If the document doesn't exist, create a new one
         await addDoc(productRef, {
           category: product.category,
           description: product.description || [],
@@ -180,11 +195,14 @@ const closeDeleteDialog = () => {
         });
       }
   
-      fetchProducts(); // Refresh the list
+      fetchProducts(); // Refresh the product list
+      toast.success("Product added successfully!");
     } catch (error) {
       console.error("Error adding product:", error);
+      toast.error("Failed to add product. Please try again.");
     }
   };
+  
 
   
 
@@ -216,18 +234,18 @@ const closeDeleteDialog = () => {
         </div>
       ) : (
         <ProductsTable
-          products={filteredProducts}
-          onEdit={(product) => setCurrentProduct(product)}
-          onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Open the delete dialog
-        />
-      )}
-  
-      <ProductModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={(data, file) => handleAddProduct(data, file)} // Reuse handleAddProduct for saving
-        product={currentProduct} // Pass the current product
+        products={products}
+        onEdit={handleEditClick} // Pass the handleEditClick function
+        onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Unchanged
       />
+              )}
+          
+          <ProductsTable
+          products={products}
+          onEdit={handleEditClick} // Pass the handleEditClick function
+          onDelete={(docId, modelToDelete) => openDeleteDialog(docId, modelToDelete)} // Unchanged
+        />
+
   
       {/* Delete Confirmation Dialog */}
       <Dialog
