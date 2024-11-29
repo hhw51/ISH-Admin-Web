@@ -10,6 +10,7 @@ import {
   TablePagination,
   Button,
 } from "@mui/material";
+import Image from "next/image"; // Import Image from next/image
 
 export interface Product {
   id: string;
@@ -26,7 +27,7 @@ export interface Product {
 interface ProductsTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, models: string) => void;
 }
 
 const ProductsTable: React.FC<ProductsTableProps> = ({ products, onEdit, onDelete }) => {
@@ -71,6 +72,7 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, onEdit, onDelet
         <TableBody>
           {paginatedProducts.map((product) => (
             <TableRow key={product.id}>
+              {/* Display text content first */}
               <TableCell>{product.category}</TableCell>
               <TableCell>{product.description}</TableCell>
               <TableCell>{product.models}</TableCell>
@@ -78,31 +80,43 @@ const ProductsTable: React.FC<ProductsTableProps> = ({ products, onEdit, onDelet
               <TableCell>{product.price}</TableCell>
               <TableCell>{product.productid}</TableCell>
               <TableCell>{product.quantity}</TableCell>
+              
+              {/* Images load lazily to avoid blocking text render */}
               <TableCell>
-                {product.imageUrl && (
-                  <img
-                    src={product.imageUrl}
-                    alt={product.models}
-                    style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                  />
-                )}
+                <div style={{ height: "50px", width: "50px" }}>
+                  {product.imageUrl && (
+                    <Image
+                      src={product.imageUrl} // Firebase Storage image URL
+                      alt={product.models}
+                      width={50}
+                      height={50}
+                      style={{ objectFit: "cover" }}
+                      loading="lazy" // Lazy load the image
+                      placeholder="blur" // Optional: use placeholder for blur-up effect
+                      blurDataURL="data:image/svg+xml;base64,..." // Optional: Provide a small base64 image as a placeholder
+                    />
+                  )}
+                </div>
               </TableCell>
+              
+              {/* Actions: Edit and Delete */}
               <TableCell>
                 <Button onClick={() => onEdit(product)} color="primary">
                   Edit
                 </Button>
                 <Button
-                onClick={() => onDelete(product.id.split("-")[0], product.models)}
-                color="secondary"
-              >
-                Delete
-              </Button>
-
+                  onClick={() => onDelete(product.id.split("-")[0], product.models)}
+                  color="secondary"
+                >
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      
+      {/* Pagination */}
       <TablePagination
         component="div"
         count={products.length}

@@ -1,7 +1,6 @@
 // layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "../app/components/Sidebar";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "../app/components/AuthContext"; // Use only AuthProvider here

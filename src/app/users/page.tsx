@@ -1,5 +1,5 @@
 import React from "react";
-import UsersPage from "../components/Users/users";
+import UsersPage from "../components/admin/Users/users";
 
 const Users: React.FC = () => {
   return <UsersPage />;

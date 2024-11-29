@@ -18,7 +18,7 @@ import { collection, getDocs, getDoc, addDoc,
   setDoc } from "firebase/firestore";
 import { getStorage,uploadBytes, ref, getDownloadURL } from "firebase/storage";
 import { CircularProgress,Typography } from "@mui/material";
-import { db,auth  } from "../../../utils/firebaseClient";
+import { db,auth  } from "../../../../utils/firebaseClient";
 import ProductsTable, { Product } from "./ProductsTable";
 import ProductModal from "./ProductModal";
 import FilterBar from "./filterBar";
@@ -47,7 +47,7 @@ const closeDeleteDialog = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "productss"));
+      const querySnapshot = await getDocs(collection(db, "popular_products"));
       const productsData = await Promise.all(
         querySnapshot.docs.map(async (doc) => {
           const product = doc.data();
@@ -109,7 +109,7 @@ const closeDeleteDialog = () => {
     const { docId, modelToDelete } = deleteModelDetails;
   
     try {
-      const productRef = doc(db, "productss", docId);
+      const productRef = doc(db, "popular_products", docId);
       const productSnapshot = await getDoc(productRef);
   
       if (productSnapshot.exists()) {
@@ -136,7 +136,7 @@ const closeDeleteDialog = () => {
         // Update the Firestore document
         await setDoc(productRef, updatedData, { merge: true });
   
-        // Show success toast
+        // Show success toaPopupopst
         toast.success(`Model "${modelToDelete}" deleted successfully!`);
   
         // Refresh the list
@@ -169,7 +169,7 @@ const closeDeleteDialog = () => {
       }
   
       // Fetch the document with the highest `productid`
-      const productRef = collection(db, "productss");
+      const productRef = collection(db, "popular_products");
       const querySnapshot = await getDocs(productRef);
       let maxProductId = 0;
   
@@ -224,9 +224,9 @@ const closeDeleteDialog = () => {
 
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
-    <Typography variant="h5" sx={{ color: 'black' }}>
-    Products
-  </Typography>      <FilterBar
+<Typography sx={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'black' }}>
+Popular Products
+</Typography>   <FilterBar
         search={search}
         setSearch={setSearch}
         category={category}

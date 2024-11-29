@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 
 export interface User {
+  password: string;
   id: string;
   account_type: string;
   address: string;

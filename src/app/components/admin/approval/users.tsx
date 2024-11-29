@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, setDoc, doc } from "firebase/firestore";
-import { CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
-import { db } from "../../../utils/firebaseClient";
+import { CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Button } from "@mui/material";
+import { db } from "../../../../utils/firebaseClient";
 import UsersTable, { User } from "./userTable"; // Updated UsersTable without cart
 import FilterBar from "../Users/filterBar";
 
@@ -74,7 +74,10 @@ const ApprovalPage: React.FC = () => {
 
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
-      <h1>Pending Approvals</h1>
+<Typography sx={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'black' }}>
+  Pending Approvals
+</Typography>
+
       <FilterBar search={search} setSearch={setSearch} category="" setCategory={() => {}} />
 
       {loading ? (

@@ -13,9 +13,10 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Typography
 } from "@mui/material";
 import { updateDoc, doc } from "firebase/firestore";
-import { db } from "../../../utils/firebaseClient";
+import { db } from "../../../../utils/firebaseClient";
 
 interface Order {
   id: string; // Firestore document ID
@@ -95,7 +96,9 @@ const OrdersPage: React.FC = () => {
 
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
-      <h1>Orders</h1>
+<Typography sx={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'black' }}>
+    Orders
+</Typography>
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
           <CircularProgress />
